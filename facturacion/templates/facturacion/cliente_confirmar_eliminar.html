@@ -1,0 +1,65 @@
+{% extends 'facturacion/base.html' %}
+
+{% block title %}Eliminar Cliente{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-white fw-bold">
+            <i class="fas fa-trash"></i> Confirmar Eliminación
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-exclamation-triangle"></i> Advertencia
+            </div>
+            <div class="card-body text-center">
+                {% if facturas_activas > 0 %}
+                    <i class="fas fa-times-circle fa-4x text-danger mb-3"></i>
+                    <h4>No se puede eliminar este cliente</h4>
+                    <p class="lead">{{ cliente.nombre }}</p>
+                    <p class="text-muted">RUC/CI: {{ cliente.ruc_ci }}</p>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-info-circle"></i>
+                        Este cliente tiene <strong>{{ facturas_activas }}</strong> factura(s) asociada(s).
+                        <br>
+                        Primero debes anular o eliminar todas sus facturas.
+                    </div>
+
+                    <a href="{% url 'facturacion:cliente_lista' %}" class="btn btn-primary mt-3">
+                        <i class="fas fa-arrow-left"></i> Volver a Clientes
+                    </a>
+                    <a href="{% url 'facturacion:cliente_detalle' cliente.pk %}" class="btn btn-info mt-3">
+                        <i class="fas fa-eye"></i> Ver Facturas del Cliente
+                    </a>
+                {% else %}
+                    <i class="fas fa-trash-alt fa-4x text-danger mb-3"></i>
+                    <h4>¿Estás seguro de eliminar este cliente?</h4>
+                    <p class="lead">{{ cliente.nombre }}</p>
+                    <p class="text-muted">RUC/CI: {{ cliente.ruc_ci }}</p>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i>
+                        Esta acción marcará el cliente como inactivo. No se eliminará físicamente.
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <a href="{% url 'facturacion:cliente_lista' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Sí, Eliminar Cliente
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

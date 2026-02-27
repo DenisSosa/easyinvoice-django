@@ -1,0 +1,123 @@
+<!-- ==========================================
+ARCHIVO: facturacion/templates/facturacion/factura_confirmar_anular.html
+========================================== -->
+
+{% extends 'facturacion/base.html' %}
+
+{% block title %}Anular Factura - Confirmación{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-white fw-bold">
+            <i class="fas fa-ban"></i> Confirmar Anulación
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-exclamation-triangle"></i> Advertencia - Acción Irreversible
+            </div>
+            <div class="card-body">
+                <!-- Información de la Factura -->
+                <div class="text-center mb-4">
+                    <i class="fas fa-ban fa-4x text-danger mb-3"></i>
+                    <h4>¿Está seguro de anular esta factura?</h4>
+                    <div class="alert alert-light border mt-3">
+                        <p class="mb-1"><strong>Número:</strong> {{ factura.numero_factura }}</p>
+                        <p class="mb-1"><strong>Cliente:</strong> {{ factura.cliente.nombre }}</p>
+                        <p class="mb-1"><strong>Monto:</strong> ₲ {{ factura.total|floatformat:0 }}</p>
+                        <p class="mb-1"><strong>Estado actual:</strong> 
+                            <span class="badge bg-{{ factura.get_estado_color }}">
+                                {{ factura.get_estado_display }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Alerta de seguridad -->
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Atención:</strong> Esta acción marcará la factura como ANULADA 
+                    y no podrá revertirse. Los registros se mantendrán para auditoría.
+                </div>
+
+                <!-- Formulario con Captcha -->
+                <form method="post" id="formAnular">
+                    {% csrf_token %}
+                    
+                    <!-- Captcha de Seguridad -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary mb-3">
+                                <i class="fas fa-shield-alt"></i> Verificación de Seguridad
+                            </h6>
+                            <p class="text-muted small mb-3">
+                                Por seguridad, resuelva la siguiente operación matemática:
+                            </p>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.captcha_respuesta.id_for_label }}" 
+                                       class="form-label fw-bold">
+                                    {{ form.captcha_respuesta.label }}
+                                </label>
+                                {{ form.captcha_respuesta }}
+                                {% if form.captcha_respuesta.errors %}
+                                    <div class="text-danger mt-2">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.captcha_respuesta.errors }}
+                                    </div>
+                                {% endif %}
+                                {% if form.captcha_respuesta.help_text %}
+                                    <small class="form-text text-muted d-block mt-1">
+                                        {{ form.captcha_respuesta.help_text }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'facturacion:factura_detalle' factura.pk %}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger" id="btnAnular">
+                            <i class="fas fa-ban"></i> Sí, Anular Factura
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Nota legal -->
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        La factura anulada permanecerá en el sistema para auditoría 
+                        y reportes legales.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Prevenir envío múltiple del formulario
+    document.getElementById('formAnular').addEventListener('submit', function(e) {
+        const btn = document.getElementById('btnAnular');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+    });
+
+    // Auto-focus en el campo del captcha
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('{{ form.captcha_respuesta.id_for_label }}').focus();
+    });
+</script>
+{% endblock %}

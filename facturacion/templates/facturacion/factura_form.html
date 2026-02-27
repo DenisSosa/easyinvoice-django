@@ -1,0 +1,208 @@
+{% extends 'facturacion/base.html' %}
+
+{% block title %}{{ accion }} Factura{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="text-white fw-bold">
+            <i class="fas fa-{% if accion == 'Crear' %}plus-circle{% else %}edit{% endif %}"></i> 
+            {{ accion }} Factura
+        </h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{% url 'facturacion:factura_lista' %}" class="btn btn-light">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-alt"></i> Información de la Factura
+            </div>
+            <div class="card-body">
+                <form method="post" id="facturaForm">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.cliente.id_for_label }}" class="form-label">
+                                {{ form.cliente.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.cliente }}
+                            {% if form.cliente.errors %}
+                                <div class="text-danger">{{ form.cliente.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="{{ form.fecha_emision.id_for_label }}" class="form-label">
+                                {{ form.fecha_emision.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.fecha_emision }}
+                            {% if form.fecha_emision.errors %}
+                                <div class="text-danger">{{ form.fecha_emision.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="{{ form.estado.id_for_label }}" class="form-label">
+                                {{ form.estado.label }}
+                            </label>
+                            {{ form.estado }}
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                                {{ form.observaciones.label }}
+                            </label>
+                            {{ form.observaciones }}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h5 class="mb-3"><i class="fas fa-list"></i> Detalles de la Factura</h5>
+
+                    {{ formset.management_form }}
+                    
+                    <div id="formset-container">
+                        {% for form in formset %}
+                        <div class="detalle-form border rounded p-3 mb-3">
+                            <div class="row g-2">
+                                <div class="col-md-12 mb-2">
+                                    <label class="form-label">{{ form.producto_catalogo.label }}</label>
+                                    {{ form.producto_catalogo }}
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">{{ form.producto.label }}</label>
+                                    {{ form.producto }}
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">{{ form.cantidad.label }}</label>
+                                    {{ form.cantidad }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">{{ form.precio_unitario.label }}</label>
+                                    {{ form.precio_unitario }}
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    {% if forloop.counter > 1 %}
+                                    {{ form.DELETE }}
+                                    <label class="form-check-label ms-2">Eliminar</label>
+                                    {% endif %}
+                                </div>
+                                {{ form.id }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" class="btn btn-outline-primary mb-4" id="add-form">
+                        <i class="fas fa-plus"></i> Agregar Línea
+                    </button>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'facturacion:factura_lista' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {{ accion }} Factura
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Función para cargar datos del producto seleccionado usando API
+    async function cargarProducto(selectElement) {
+        const productoId = selectElement.value;
+        if (!productoId) return;
+        
+        const row = selectElement.closest('.detalle-form');
+        const nombreInput = row.querySelector('input[name$="-producto"]');
+        const precioInput = row.querySelector('input[name$="-precio_unitario"]');
+        
+        try {
+            const response = await fetch(`/api/producto/${productoId}/`);
+            if (!response.ok) throw new Error('Producto no encontrado');
+            
+            const data = await response.json();
+            if (nombreInput) nombreInput.value = data.nombre;
+            if (precioInput) precioInput.value = data.precio;
+        } catch (error) {
+            console.error('Error cargando producto:', error);
+            alert('Error al cargar el producto');
+        }
+    }
+
+    // Manejo del formset dinámico
+    document.getElementById('add-form').addEventListener('click', function() {
+        const container = document.getElementById('formset-container');
+        const totalForms = document.querySelector('#id_detalles-TOTAL_FORMS');
+        const formCount = parseInt(totalForms.value);
+        
+        const templateForm = document.querySelector('.detalle-form');
+        const newForm = templateForm.cloneNode(true);
+        const formRegex = RegExp(`detalles-(\\d+)-`, 'g');
+        
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `detalles-${formCount}-`);
+        newForm.querySelectorAll('input, select, textarea').forEach(input => {
+            input.value = '';
+            if (input.type === 'checkbox') input.checked = false;
+            if (input.hasAttribute('required')) input.removeAttribute('required');
+        });
+        
+        // Agregar botón eliminar si no existe
+        const deleteCol = newForm.querySelector('.col-md-2');
+        if (deleteCol && !deleteCol.querySelector('button')) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'btn btn-danger btn-sm';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.onclick = function() { newForm.remove(); };
+            deleteCol.appendChild(deleteBtn);
+        }
+        
+        container.appendChild(newForm);
+        totalForms.value = formCount + 1;
+        
+        // Focus en el nuevo select
+        const newSelect = newForm.querySelector('select[name$="-producto_catalogo"]');
+        if (newSelect) newSelect.focus();
+    });
+    
+    // Validación del formulario
+    document.getElementById('facturaForm').addEventListener('submit', function(e) {
+        const detalles = document.querySelectorAll('.detalle-form');
+        let tieneAlMenosUno = false;
+        
+        detalles.forEach(detalle => {
+            const producto = detalle.querySelector('input[name$="-producto"]');
+            const cantidad = detalle.querySelector('input[name$="-cantidad"]');
+            const precio = detalle.querySelector('input[name$="-precio_unitario"]');
+            const deleteCheckbox = detalle.querySelector('input[name$="-DELETE"]');
+            
+            if (deleteCheckbox && deleteCheckbox.checked) return;
+            if (producto && producto.value && cantidad && cantidad.value && precio && precio.value) {
+                tieneAlMenosUno = true;
+            }
+        });
+        
+        if (!tieneAlMenosUno) {
+            e.preventDefault();
+            alert('Debe agregar al menos un producto válido a la factura.');
+        }
+    });
+</script>
+{% endblock %}

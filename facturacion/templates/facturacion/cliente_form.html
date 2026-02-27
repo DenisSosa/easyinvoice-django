@@ -1,0 +1,142 @@
+{% extends 'facturacion/base.html' %}
+
+{% block title %}{{ accion }} Cliente{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="text-white fw-bold">
+            <i class="fas fa-{% if accion == 'Crear' %}user-plus{% else %}edit{% endif %}"></i> 
+            {{ accion }} Cliente
+        </h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{% url 'facturacion:cliente_lista' %}" class="btn btn-light">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-alt"></i> Información del Cliente
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="row g-3">
+                        <!-- Nombre -->
+                        <div class="col-md-12">
+                            <label for="{{ form.nombre.id_for_label }}" class="form-label">
+                                {{ form.nombre.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                                <div class="text-danger">{{ form.nombre.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- RUC/CI -->
+                        <div class="col-md-6">
+                            <label for="{{ form.ruc_ci.id_for_label }}" class="form-label">
+                                {{ form.ruc_ci.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.ruc_ci }}
+                            {% if form.ruc_ci.errors %}
+                                <div class="text-danger">{{ form.ruc_ci.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i> Ejemplo: 12345678-9 o 80012345-6
+                            </small>
+                        </div>
+
+                        <!-- Teléfono -->
+                        <div class="col-md-6">
+                            <label for="{{ form.telefono.id_for_label }}" class="form-label">
+                                {{ form.telefono.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}
+                                <div class="text-danger">{{ form.telefono.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i> Ejemplo: 0981123456
+                            </small>
+                        </div>
+
+                        <!-- Dirección -->
+                        <div class="col-md-12">
+                            <label for="{{ form.direccion.id_for_label }}" class="form-label">
+                                {{ form.direccion.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.direccion }}
+                            {% if form.direccion.errors %}
+                                <div class="text-danger">{{ form.direccion.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-12">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                {{ form.email.label }}
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger">{{ form.email.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i> Opcional
+                            </small>
+                        </div>
+
+                        <!-- Activo -->
+                        <div class="col-md-12">
+                            <div class="form-check">
+                                {{ form.activo }}
+                                <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                    {{ form.activo.label }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'facturacion:cliente_lista' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {{ accion }} Cliente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Card de ayuda -->
+        <div class="card mt-4" style="background: #e0f2fe; border: none;">
+            <div class="card-body">
+                <h6 class="text-primary mb-3">
+                    <i class="fas fa-lightbulb"></i> Información Importante
+                </h6>
+                <ul class="mb-0 small">
+                    <li>Los campos marcados con <span class="text-danger">*</span> son obligatorios</li>
+                    <li>El RUC/CI debe ser único en el sistema</li>
+                    <li>El email es opcional pero recomendado para envío de facturas</li>
+                    <li>Los clientes inactivos no aparecen en la lista de selección al crear facturas</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

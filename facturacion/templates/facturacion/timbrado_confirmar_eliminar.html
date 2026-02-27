@@ -1,0 +1,59 @@
+{% extends 'facturacion/base.html' %}
+
+{% block title %}Eliminar Configuración de Timbrado{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-circle"></i> ¡Atención!</h6>
+                    <p class="mb-0">Está a punto de eliminar la configuración de timbrado. Esta acción no se puede deshacer.</p>
+                </div>
+
+                <h6 class="mb-3">Configuración a eliminar:</h6>
+                <div class="bg-light p-3 rounded mb-4">
+                    <p class="mb-2"><strong>Establecimiento:</strong> {{ config.establecimiento }}</p>
+                    <p class="mb-2"><strong>Punto de Expedición:</strong> {{ config.punto_expedicion }}</p>
+                    <p class="mb-2"><strong>Vigencia:</strong> {{ config.fecha_inicio|date:"d/m/Y" }} - {{ config.fecha_vencimiento|date:"d/m/Y" }}</p>
+                    {% if config.numero_timbrado %}
+                    <p class="mb-0"><strong>Número Timbrado:</strong> {{ config.numero_timbrado }}</p>
+                    {% endif %}
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="confirmacion" class="form-label">
+                            Para confirmar, escriba <strong class="text-danger">ELIMINAR</strong> en mayúsculas:
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="confirmacion" 
+                               name="confirmacion" 
+                               placeholder="Escriba ELIMINAR"
+                               required 
+                               autofocus>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Eliminar Configuración
+                        </button>
+                        <a href="{% url 'facturacion:timbrado_configurar' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

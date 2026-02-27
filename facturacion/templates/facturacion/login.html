@@ -1,0 +1,250 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Facturación</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-left {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            padding: 2.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .login-left i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-left h2 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-left p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .login-right {
+            flex: 1;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+            outline: none;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(13, 110, 253, 0.4);
+        }
+
+        .demo-credentials {
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .demo-credentials h6 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-credentials p {
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .admin-link {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .admin-link a {
+            color: #0d6efd;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .admin-link a:hover {
+            color: #0a58ca;
+        }
+
+        .alert {
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .login-card {
+                flex-direction: column;
+                max-width: 420px;
+            }
+            .login-left {
+                padding: 2rem 1.5rem;
+            }
+            .login-left i {
+                font-size: 3rem;
+            }
+            .login-left h2 {
+                font-size: 1.5rem;
+            }
+            .login-right {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-left">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <h2>Sistema de Facturación</h2>
+            <p>Gestión Profesional de Facturas</p>
+        </div>
+        
+        <div class="login-right">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i> Usuario
+                    </label>
+                    <input type="text" class="form-control" id="username" name="username" 
+                           placeholder="Ingrese su usuario" required autofocus>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> Contraseña
+                    </label>
+                    <input type="password" class="form-control" id="password" name="password" 
+                           placeholder="Ingrese su contraseña" required>
+                </div>
+                
+                <button type="submit" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
+
+            <div class="demo-credentials">
+                <h6><i class="fas fa-info-circle"></i> Credenciales de Prueba</h6>
+                <p><strong>Usuario:</strong> admin</p>
+                <p><strong>Contraseña:</strong> admin123</p>
+            </div>
+
+            <div class="admin-link">
+                <a href="{% url 'facturacion:login_admin' %}">
+                    <i class="fas fa-user-shield"></i> Acceso para administradores
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+</body>
+</html>

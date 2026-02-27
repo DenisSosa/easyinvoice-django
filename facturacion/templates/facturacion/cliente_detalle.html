@@ -1,0 +1,132 @@
+{% extends 'facturacion/base.html' %}
+
+{% block title %}{{ cliente.nombre }} - Detalle{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="text-white fw-bold mb-2">
+            <i class="fas fa-user"></i> Detalle del Cliente
+        </h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{% url 'facturacion:cliente_lista' %}" class="btn btn-light">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+        <a href="{% url 'facturacion:cliente_editar' cliente.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Información del Cliente -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-circle"></i> Información del Cliente
+            </div>
+            <div class="card-body">
+                <h4 class="mb-3">{{ cliente.nombre }}</h4>
+                
+                <div class="mb-3">
+                    <strong><i class="fas fa-id-card"></i> RUC/CI:</strong><br>
+                    {{ cliente.ruc_ci }}
+                </div>
+
+                <div class="mb-3">
+                    <strong><i class="fas fa-map-marker-alt"></i> Dirección:</strong><br>
+                    {{ cliente.direccion }}
+                </div>
+
+                <div class="mb-3">
+                    <strong><i class="fas fa-phone"></i> Teléfono:</strong><br>
+                    {{ cliente.telefono }}
+                </div>
+
+                {% if cliente.email %}
+                <div class="mb-3">
+                    <strong><i class="fas fa-envelope"></i> Email:</strong><br>
+                    {{ cliente.email }}
+                </div>
+                {% endif %}
+
+                <hr>
+
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h3 class="text-primary">{{ cliente.total_facturas }}</h3>
+                        <small class="text-muted">Facturas</small>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="text-success">₲{{ cliente.total_facturado|floatformat:0 }}</h3>
+                        <small class="text-muted">Total Facturado</small>
+                    </div>
+                </div>
+
+                <hr>
+
+                <p class="text-muted mb-0 small">
+                    <i class="fas fa-clock"></i> Registrado: {{ cliente.fecha_creacion|date:"d/m/Y" }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Facturas -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-invoice"></i> Historial de Facturas
+            </div>
+            <div class="card-body p-0">
+                {% if facturas %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>N° Factura</th>
+                                <th>Fecha</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for factura in facturas %}
+                            <tr>
+                                <td class="fw-bold">{{ factura.numero_factura }}</td>
+                                <td>{{ factura.fecha_emision|date:"d/m/Y" }}</td>
+                                <td class="text-end fw-bold text-success">
+                                    ₲ {{ factura.total|floatformat:0 }}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-{{ factura.get_estado_color }}">
+                                        {{ factura.get_estado_display }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'facturacion:factura_detalle' factura.pk %}" 
+                                       class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Este cliente no tiene facturas registradas</p>
+                    <a href="{% url 'facturacion:factura_crear' %}" class="btn btn-primary mt-2">
+                        <i class="fas fa-plus"></i> Crear Factura
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+<!-- ==========================================
+ARCHIVO: facturacion/templates/facturacion/factura_timbrado_form.html
+========================================== -->
+
+{% extends 'facturacion/base.html' %}
+
+{% block title %}Añadir Timbrado - {{ factura.numero_factura }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="text-white fw-bold">
+            <i class="fas fa-stamp"></i> Añadir Timbrado
+        </h1>
+        <p class="text-white opacity-75">Factura: {{ factura.numero_factura }}</p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{% url 'facturacion:factura_detalle' factura.pk %}" class="btn btn-light">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Alerta de información legal -->
+        <div class="alert alert-warning mb-4">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Importante:</strong> El número de timbrado debe estar autorizado por la 
+            <strong>SET (Subsecretaría de Estado de Tributación)</strong> de Paraguay.
+            Consulte con su contador antes de proceder.
+            <br><br>
+            <small>
+                <i class="fas fa-link"></i> Referencias oficiales:
+                <a href="https://www.set.gov.py/" target="_blank" rel="noopener noreferrer" class="alert-link">
+                    Portal SET
+                </a> |
+                <a href="https://ekuatia.set.gov.py/" target="_blank" rel="noopener noreferrer" class="alert-link">
+                    Sistema Ekuatia
+                </a>
+            </small>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-invoice"></i> Información de la Factura
+            </div>
+            <div class="card-body bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Cliente:</strong> {{ factura.cliente.nombre }}</p>
+                        <p class="mb-1"><strong>RUC/CI:</strong> {{ factura.cliente.ruc_ci }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Fecha Emisión:</strong> {{ factura.fecha_emision|date:"d/m/Y" }}</p>
+                        <p class="mb-1"><strong>Total:</strong> ₲ {{ factura.total|floatformat:0 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-stamp"></i> Datos del Timbrado
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Número de Timbrado -->
+                    <div class="mb-4">
+                        <label for="{{ form.timbrado.id_for_label }}" class="form-label">
+                            <i class="fas fa-hashtag"></i> {{ form.timbrado.label }}
+                            <span class="text-danger">*</span>
+                        </label>
+                        {{ form.timbrado }}
+                        {% if form.timbrado.errors %}
+                            <div class="text-danger mt-2">
+                                {{ form.timbrado.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i> {{ form.timbrado.help_text }}
+                        </small>
+                    </div>
+
+                    <!-- Fechas de Vigencia -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.timbrado_fecha.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> {{ form.timbrado_fecha.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.timbrado_fecha }}
+                            {% if form.timbrado_fecha.errors %}
+                                <div class="text-danger mt-2">
+                                    {{ form.timbrado_fecha.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                {{ form.timbrado_fecha.help_text }}
+                            </small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.timbrado_vencimiento.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-times"></i> {{ form.timbrado_vencimiento.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.timbrado_vencimiento }}
+                            {% if form.timbrado_vencimiento.errors %}
+                                <div class="text-danger mt-2">
+                                    {{ form.timbrado_vencimiento.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                {{ form.timbrado_vencimiento.help_text }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional si ya existe timbrado -->
+                    {% if factura.timbrado_por %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Timbrado anterior:</strong><br>
+                        Registrado por: {{ factura.timbrado_por.username }}<br>
+                        Fecha de registro: {{ factura.timbrado_fecha_registro|date:"d/m/Y H:i" }}
+                    </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'facturacion:factura_detalle' factura.pk %}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Timbrado
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Card de validación legal -->
+        <div class="card mt-4 border-warning">
+            <div class="card-header bg-warning">
+                <i class="fas fa-exclamation-triangle"></i> Validación Legal Requerida
+            </div>
+            <div class="card-body">
+                <h6 class="text-warning">Antes de usar en producción, debe:</h6>
+                <ul class="mb-0">
+                    <li>Consultar con un contador habilitado en Paraguay</li>
+                    <li>Verificar el formato exacto requerido por la SET</li>
+                    <li>Validar los rangos de fecha según normativa vigente</li>
+                    <li>Considerar integración con sistema Ekuatia si aplica</li>
+                    <li>Implementar validaciones adicionales según tipo de contribuyente</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- ==========================================
+MODIFICACIÓN: facturacion/templates/facturacion/factura_detalle.html
+AÑADIR BOTÓN DE TIMBRADO (dentro del card de la factura)
+========================================== -->
+
+<!-- Añadir después de los botones existentes en la parte superior -->
+{% if user.is_staff or user.is_superuser %}
+    {% if not factura.tiene_timbrado %}
+        <a href="{% url 'facturacion:factura_añadir_timbrado' factura.pk %}" 
+           class="btn btn-warning">
+            <i class="fas fa-stamp"></i> Añadir Timbrado
+        </a>
+    {% else %}
+        <a href="{% url 'facturacion:factura_añadir_timbrado' factura.pk %}" 
+           class="btn btn-outline-warning">
+            <i class="fas fa-edit"></i> Editar Timbrado
+        </a>
+    {% endif %}
+{% endif %}
+
+<!-- Añadir sección de timbrado en el detalle de la factura -->
+<!-- (Después de la información del cliente) -->
+
+{% if factura.tiene_timbrado %}
+<hr>
+<div class="row mb-4">
+    <div class="col-12">
+        <h5 class="text-primary mb-3">
+            <i class="fas fa-stamp"></i> INFORMACIÓN DE TIMBRADO
+        </h5>
+        <div class="row">
+            <div class="col-md-4">
+                <p class="mb-1"><strong>Número:</strong> {{ factura.timbrado }}</p>
+            </div>
+            <div class="col-md-4">
+                <p class="mb-1"><strong>Vigencia:</strong> 
+                    {{ factura.timbrado_fecha|date:"d/m/Y" }} - 
+                    {{ factura.timbrado_vencimiento|date:"d/m/Y" }}
+                </p>
+            </div>
+            <div class="col-md-4">
+                <p class="mb-1">
+                    <strong>Estado:</strong>
+                    {% if factura.timbrado_vigente %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle"></i> Vigente
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger">
+                            <i class="fas fa-times-circle"></i> Vencido
+                        </span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% if factura.timbrado_por %}
+        <small class="text-muted">
+            Registrado por: {{ factura.timbrado_por.username }} 
+            el {{ factura.timbrado_fecha_registro|date:"d/m/Y H:i" }}
+        </small>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

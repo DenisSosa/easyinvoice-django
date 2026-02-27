@@ -1,0 +1,169 @@
+{% extends 'facturacion/base.html' %}
+
+{% block title %}Facturas - Sistema de Facturación{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="text-white fw-bold mb-2">
+            <i class="fas fa-file-invoice"></i> Facturas
+        </h1>
+        <p class="text-white opacity-75">Gestiona tus facturas emitidas</p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{% url 'facturacion:factura_crear' %}" class="btn btn-success btn-lg">
+            <i class="fas fa-plus-circle"></i> Nueva Factura
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-search"></i> Buscar</label>
+                    {{ form.buscar }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label"><i class="fas fa-flag"></i> Estado</label>
+                    {{ form.estado }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label"><i class="fas fa-user"></i> Cliente</label>
+                    {{ form.cliente }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Desde</label>
+                    {{ form.fecha_desde }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Hasta</label>
+                    {{ form.fecha_hasta }}
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de Facturas -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> Listado de Facturas
+        <span class="badge bg-light text-dark float-end">Total: {{ total_facturas }}</span>
+    </div>
+    <div class="card-body p-0">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>N° Factura</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for factura in page_obj %}
+                    <tr>
+                        <td class="fw-bold">{{ factura.numero_factura }}</td>
+                        <td>
+                            {{ factura.cliente.nombre|truncatewords:5 }}<br>
+                            <small class="text-muted">{{ factura.cliente.ruc_ci }}</small>
+                        </td>
+                        <td>{{ factura.fecha_emision|date:"d/m/Y" }}</td>
+                        <td class="text-end fw-bold text-success">
+                            ₲ {{ factura.total|floatformat:0 }}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-{{ factura.get_estado_color }}">
+                                {{ factura.get_estado_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'facturacion:factura_detalle' factura.pk %}" 
+                                   class="btn btn-sm btn-info" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if factura.puede_editarse %}
+                                <a href="{% url 'facturacion:factura_editar' factura.pk %}" 
+                                   class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                                {% if factura.puede_anularse %}
+                                <a href="{% url 'facturacion:factura_anular' factura.pk %}" 
+                                   class="btn btn-sm btn-danger" title="Anular">
+                                    <i class="fas fa-ban"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if page_obj.has_other_pages %}
+        <div class="card-footer">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">No hay facturas registradas</h4>
+            <a href="{% url 'facturacion:factura_crear' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-plus-circle"></i> Crear Primera Factura
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

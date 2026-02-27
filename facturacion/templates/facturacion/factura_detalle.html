@@ -1,0 +1,171 @@
+{% extends 'facturacion/base.html' %}
+
+{% block title %}Factura {{ factura.numero_factura }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="text-white fw-bold">
+            <i class="fas fa-file-invoice"></i> {{ factura.numero_factura }}
+        </h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{% url 'facturacion:factura_lista' %}" class="btn btn-light">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+        {% if factura.puede_editarse %}
+        <a href="{% url 'facturacion:factura_editar' factura.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        {% endif %}
+        {% if factura.estado == 'PENDIENTE' %}
+        <a href="{% url 'facturacion:factura_marcar_pagada' factura.pk %}" class="btn btn-success">
+            <i class="fas fa-check"></i> Marcar Pagada
+        </a>
+        {% endif %}
+        <a href="{% url 'facturacion:factura_pdf' factura.pk %}" class="btn btn-danger" target="_blank">
+            <i class="fas fa-file-pdf"></i> Descargar PDF
+        </a>
+        <button onclick="window.print()" class="btn btn-secondary">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+        {% if user.is_staff or user.is_superuser %}
+            {% if not factura.tiene_timbrado %}
+                <a href="{% url 'facturacion:factura_timbrado' factura.pk %}" 
+                   class="btn btn-warning">
+                    <i class="fas fa-stamp"></i> Añadir Timbrado
+                </a>
+            {% else %}
+                <a href="{% url 'facturacion:factura_timbrado' factura.pk %}" 
+                   class="btn btn-outline-warning">
+                    <i class="fas fa-edit"></i> Editar Timbrado
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body p-5">
+                <!-- Encabezado de Factura -->
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <h2 class="text-primary">FACTURA</h2>
+                        <h4>{{ factura.numero_factura }}</h4>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p class="mb-1"><strong>Fecha de Emisión:</strong></p>
+                        <p class="h5">{{ factura.fecha_emision|date:"d/m/Y" }}</p>
+                        <span class="badge bg-{{ factura.get_estado_color }} fs-6">
+                            {{ factura.get_estado_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Datos del Cliente -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="text-primary mb-3">DATOS DEL CLIENTE</h5>
+                        <p class="mb-1"><strong>Cliente:</strong> {{ factura.cliente.nombre }}</p>
+                        <p class="mb-1"><strong>RUC/CI:</strong> {{ factura.cliente.ruc_ci }}</p>
+                        <p class="mb-1"><strong>Dirección:</strong> {{ factura.cliente.direccion }}</p>
+                        <p class="mb-1"><strong>Teléfono:</strong> {{ factura.cliente.telefono }}</p>
+                    </div>
+                </div>
+                {% if factura.tiene_timbrado %}
+                <hr>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-stamp"></i> INFORMACIÓN DE TIMBRADO
+                        </h5>
+                        <p class="mb-1"><strong>Número:</strong> {{ factura.timbrado }}</p>
+                        <p class="mb-1"><strong>Vigencia:</strong> 
+                            {{ factura.timbrado_fecha|date:"d/m/Y" }} - 
+                            {{ factura.timbrado_vencimiento|date:"d/m/Y" }}
+                        </p>
+                        <p class="mb-0">
+                            <strong>Estado:</strong>
+                            {% if factura.timbrado_vigente %}
+                                <span class="badge bg-success">Vigente</span>
+                            {% else %}
+                                <span class="badge bg-danger">Vencido</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+                <hr>
+
+                <!-- Detalle de Productos/Servicios -->
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Descripción</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Precio Unit.</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in detalles %}
+                            <tr>
+                                <td>{{ detalle.producto }}</td>
+                                <td class="text-center">{{ detalle.cantidad }}</td>
+                                <td class="text-end">₲ {{ detalle.precio_unitario|floatformat:0 }}</td>
+                                <td class="text-end">₲ {{ detalle.subtotal|floatformat:0 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Totales -->
+                <div class="row">
+                    <div class="col-md-6 offset-md-6">
+                        <table class="table">
+                            <tr>
+                                <td><strong>Subtotal:</strong></td>
+                                <td class="text-end">₲ {{ factura.subtotal|floatformat:0 }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>IVA (10%):</strong></td>
+                                <td class="text-end">₲ {{ factura.iva|floatformat:0 }}</td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td><strong>TOTAL:</strong></td>
+                                <td class="text-end"><strong>₲ {{ factura.total|floatformat:0 }}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                {% if factura.observaciones %}
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-primary">Observaciones:</h6>
+                        <p>{{ factura.observaciones }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Info adicional -->
+                <div class="row mt-4 text-muted small">
+                    <div class="col-6">
+                        <p class="mb-0">Creada: {{ factura.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p class="mb-0">Actualizada: {{ factura.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

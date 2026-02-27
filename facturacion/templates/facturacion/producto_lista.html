@@ -1,0 +1,68 @@
+{% extends 'facturacion/base.html' %}
+
+{% block title %}Productos{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1><i class="fas fa-box"></i> Productos</h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{% url 'facturacion:producto_crear' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Producto
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th class="text-end">Precio</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in page_obj %}
+                    <tr>
+                        <td><strong>{{ producto.nombre }}</strong></td>
+                        <td>{{ producto.descripcion|truncatewords:10 }}</td>
+                        <td class="text-end">₲ {{ producto.precio|floatformat:0 }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'facturacion:producto_editar' producto.pk %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'facturacion:producto_eliminar' producto.pk %}" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No hay productos registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
